@@ -1,6 +1,10 @@
+function autoHeight(elem) {  /* javascript */
+	elem.style.height = '1px';
+	elem.style.height = (elem.scrollHeight) + 'px';
+}
+
 const tasksDiv = document.getElementById('tasks');
 const addTaskButton = document.getElementById('add-task-button');
-const actionLetterDiv = document.getElementById('action-letter');
 
 /// Array to save tasks in memory
 let tasks = [];
@@ -18,12 +22,11 @@ updateHtmlUi();
 addTaskButton.addEventListener('click', (event) => {
 
 	/// Add to memory
-	const newTaskInput = prompt('What do you want to add?');
-	if (!newTaskInput) return;
+
 	tasks.push({
-		input: newTaskInput,
 		id: new Date(),
 		isChecked: false,
+		input: '',
 	});
 
 	/// Update UI
@@ -61,60 +64,42 @@ function updateHtmlUi() {
 		});
 		newTaskHtml.appendChild(checkboxHtml);
 
-		const textHtml = document.createElement('p');
+		const textHtml = document.createElement('textarea');
+		textHtml.className = 'task-input';
 		textHtml.innerText = task.input;
+		textHtml.oninput = (event) => {
+			autoHeight(event.target);
+			tasks[i].input = event.target.value;
+			saveToLocalStorage();
+		};
+		textHtml.onblur = (event) => updateHtmlUi();
+
 		newTaskHtml.appendChild(textHtml);
 
-		newTaskHtml.addEventListener('dblclick', (event) => {
-			event.preventDefault();
-			if (didPressD) {
-				const yes = confirm('are you sure?');
-				if (!yes) {
-					return;
-				}
-				tasks = tasks.filter((t, index) => index !== i);
-				updateHtmlUi();
-				saveToLocalStorage();
-				didPressD = false;
-				actionLetterDiv.innerText = 'P';
-			} else {
-				const value = prompt('What is the new value?');
-				if (!value) {
-					return;
-				}
-				tasks[i].input = value;
-				updateHtmlUi();
-				saveToLocalStorage();
-			}
-			return false;
+		const spacerHtml = document.createElement('div');
+		spacerHtml.className = 'spacer';
+		newTaskHtml.appendChild(spacerHtml);
 
+		const deleteIconHtml = document.createElement('div');
+		deleteIconHtml.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
+		deleteIconHtml.addEventListener('click', (event) => {
+			tasks = tasks.filter((t, index) => index !== i);
+			updateHtmlUi();
+			saveToLocalStorage();
 		});
-
-		newTaskHtml.addEventListener('');
+		newTaskHtml.appendChild(deleteIconHtml);
 
 		tasksDiv.appendChild(newTaskHtml);
 	}
+
+	const tasksInputs = document.getElementsByClassName('task-input');
+	for (const child of tasksInputs) {
+		autoHeight(child);
+	}
 }
 
-let didPressD = false;
-let didPressC = false;
 
-window.addEventListener('keypress', (event) => {
-	if (event.key === 'd') {
-		didPressD = true;
-		didPressC = false;
-		actionLetterDiv.innerText = 'D';
 
-	} else if (event.key === 'p') {
-		didPressD = false;
-		didPressC = false;
-		actionLetterDiv.innerText = 'P';
-	} else if (event.key === 'c') {
-		didPressC = true;
-		didPressD = false;
-		actionLetterDiv.innerText = 'C';
-	}
-});
 
 
 
